@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/popularImagesFragment">
+
+    <fragment
+        android:id="@+id/popularImagesFragment"
+        android:name="com.giussepr.pixabay.ui.popular.PopularImagesFragment"
+        android:label="popular_images_fragment"
+        tools:layout="@layout/popular_images_fragment" />
+</navigation>
