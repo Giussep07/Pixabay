@@ -1,5 +1,7 @@
 package com.giussepr.pixabay.network
 
+import android.util.Log
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.paging.PageKeyedDataSource
 import com.giussepr.pixabay.domain.PixabayImage
@@ -15,7 +17,9 @@ enum class State {
 class PixabayDataSource(private val pixabayApi: PixabayApi) :
     PageKeyedDataSource<Int, PixabayImage>() {
 
-    var state: MutableLiveData<State> = MutableLiveData()
+    private val _state = MutableLiveData<State>()
+    val state: LiveData<State>
+        get() = _state
 
     // Create a Coroutine scope using a job to be able to cancel when needed
     private var viewModelJob = Job()
@@ -29,10 +33,12 @@ class PixabayDataSource(private val pixabayApi: PixabayApi) :
     ) {
         updateState(State.LOADING)
         coroutineScope.launch {
-            val getPixabayImages = pixabayApi.getPixabayImages(page = 1)
+            val getPixabayImages =
+                pixabayApi.getPixabayImages(page = 1, perPage = params.requestedLoadSize)
             try {
                 val pixabayImages = getPixabayImages.await()
                 updateState(State.DONE)
+                Log.i("PixabayDataSource", "Page: 1, requestLoadSize: ${params.requestedLoadSize}")
                 callback.onResult(pixabayImages.hits, null, 2)
 
             } catch (ex: Exception) {
@@ -45,14 +51,17 @@ class PixabayDataSource(private val pixabayApi: PixabayApi) :
     override fun loadAfter(params: LoadParams<Int>, callback: LoadCallback<Int, PixabayImage>) {
         updateState(State.LOADING)
         coroutineScope.launch {
-            val getPixabayImages = pixabayApi.getPixabayImages(page = params.key)
+            val getPixabayImages =
+                pixabayApi.getPixabayImages(page = params.key, perPage = params.requestedLoadSize)
             try {
                 val pixabayImages = getPixabayImages.await()
                 updateState(State.DONE)
+                Log.i("PixabayDataSource", "Page: ${params.key}, requestLoadSize: ${params.requestedLoadSize}")
                 callback.onResult(pixabayImages.hits, params.key + 1)
 
             } catch (ex: Exception) {
                 updateState(State.ERROR)
+                Log.i("PixabayDataSource", ex.localizedMessage)
             }
 
         }
@@ -62,6 +71,6 @@ class PixabayDataSource(private val pixabayApi: PixabayApi) :
     }
 
     private fun updateState(state: State) {
-        this.state.postValue(state)
+        _state.postValue(state)
     }
 }

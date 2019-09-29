@@ -4,20 +4,20 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.paging.PagedListAdapter
 import androidx.recyclerview.widget.DiffUtil
-import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.giussepr.pixabay.databinding.GridItemViewBinding
 import com.giussepr.pixabay.domain.PixabayImage
 
-class ImageAdapter : ListAdapter<PixabayImage, ImageAdapter.PixabayImageViewHolder>(DiffCallback) {
+class ImageAdapter :
+    PagedListAdapter<PixabayImage, ImageAdapter.PixabayImageViewHolder>(DiffCallback) {
 
     object DiffCallback : DiffUtil.ItemCallback<PixabayImage>() {
         override fun areItemsTheSame(oldItem: PixabayImage, newItem: PixabayImage): Boolean {
-            return oldItem === newItem
+            return oldItem.id == newItem.id
         }
 
         override fun areContentsTheSame(oldItem: PixabayImage, newItem: PixabayImage): Boolean {
-            return oldItem.id == newItem.id
+            return oldItem == newItem
         }
     }
 
@@ -31,7 +31,13 @@ class ImageAdapter : ListAdapter<PixabayImage, ImageAdapter.PixabayImageViewHold
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PixabayImageViewHolder {
-        return PixabayImageViewHolder(GridItemViewBinding.inflate(LayoutInflater.from(parent.context)))
+        return PixabayImageViewHolder(
+            GridItemViewBinding.inflate(
+                LayoutInflater.from(parent.context),
+                parent,
+                false
+            )
+        )
     }
 
     override fun onBindViewHolder(holder: PixabayImageViewHolder, position: Int) {
