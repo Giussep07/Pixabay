@@ -10,7 +10,9 @@ interface PixabayApi {
     @GET(".")
     fun getPixabayImages(
         @Query("key") key: String = "13767610-9159db4b48af8f5b9a755d84a",
-        @Query("page") page: Int
+        @Query("page") page: Int,
+        @Query("per_page") perPage: Int,
+        @Query("lang") language: String = "en"
     ):
             Deferred<PixabayResponse>
 }

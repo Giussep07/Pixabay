@@ -2,6 +2,7 @@ package com.giussepr.pixabay
 
 import android.widget.ImageView
 import android.widget.ListAdapter
+import android.widget.TextView
 import androidx.core.net.toUri
 import androidx.databinding.BindingAdapter
 import androidx.paging.PagedList
@@ -27,7 +28,12 @@ fun bindImageFromUrl(imageView: ImageView, url: String?) {
 }
 
 @BindingAdapter("bindListImages")
-fun binListImages(recyclerView: RecyclerView, images: List<PixabayImage>?){
+fun binListImages(recyclerView: RecyclerView, images: PagedList<PixabayImage>?) {
     val adapter = recyclerView.adapter as ImageAdapter
     adapter.submitList(images)
+}
+
+@BindingAdapter("bindTextCapitalized")
+fun bindTextCapitalized(textView: TextView, text: String){
+    textView.text = text.split(' ').joinToString(" ") { it.capitalize() }
 }

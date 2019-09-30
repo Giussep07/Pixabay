@@ -4,30 +4,33 @@ import androidx.lifecycle.*
 import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
 import com.giussepr.pixabay.domain.PixabayImage
-import com.giussepr.pixabay.network.PixabayRetrofit
-import com.giussepr.pixabay.network.RepoBoundaryCallback
+import com.giussepr.pixabay.network.*
 import kotlinx.coroutines.launch
 
-enum class MarsApiStatus { LOADING, ERROR, DONE }
-
 class PopularImagesViewModel : ViewModel() {
-    private val _images = MutableLiveData<List<PixabayImage>>()
-    val images: LiveData<List<PixabayImage>>
-        get() = _images
+
+    private val pixabayApi = PixabayRetrofit.retrofitService
+    private val perPage = 20
+    private val pixabayDataSourceFactory: PixabayDataSourceFactory
+
+    var images: LiveData<PagedList<PixabayImage>>
 
     init {
-        getPixabayImages()
+        pixabayDataSourceFactory = PixabayDataSourceFactory(pixabayApi)
+        val config = PagedList.Config.Builder()
+            .setPageSize(perPage)
+            .setInitialLoadSizeHint(perPage)
+            .setEnablePlaceholders(false)
+            .build()
+
+        images = LivePagedListBuilder(pixabayDataSourceFactory, config).build()
     }
 
-    private fun getPixabayImages() {
-        viewModelScope.launch {
-            val getPixabayImages = PixabayRetrofit.retrofitService.getPixabayImages(page = 1)
-            try {
-                val dataSourceFactory = getPixabayImages.await()
-                _images.value = dataSourceFactory.hits
-            } catch (ex: Exception) {
-                _images.value = null
-            }
-        }
+    fun getState(): LiveData<State> = Transformations.switchMap<PixabayDataSource, State>(
+        pixabayDataSourceFactory.pixabayDataSourceLiveData, PixabayDataSource::state
+    )
+
+    fun imagesIsEmpty(): Boolean {
+        return images.value?.isEmpty() ?: true
     }
 }
